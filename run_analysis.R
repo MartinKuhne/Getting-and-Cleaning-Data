@@ -137,7 +137,7 @@ stopifnot(nrow(tidy) == 10299) # same as before
 setnames(tidy, sapply(names(tidy), tidyColumnNamePass2))
 
 # transpose into a tall table with variable/value pairs
-tidyTall <- melt(tidy, id.vars = c("SubjectId", "ActivityId"))
+tidyTall <- reshape2::melt(tidy, id.vars = c("SubjectId", "ActivityId"))
 tidyTall$Activity <- factor(tidyTall$Activity)
 
 # transpose it into a set of sums per subject and activity
@@ -145,11 +145,13 @@ final <- reshape2::dcast(tidyTall, SubjectId + ActivityId ~ variable, mean)
 
 # bind main data with acticity labels
 final <- left_join(final, getActivityLabels(), by="ActivityId")
-within(final, rm(ActivityId))
+final <- within(final, rm(ActivityId))
+
+final <- final[, c(grep(" ", names(final), value=T, invert=T), grep(" ", names(final), value=T))]
 
 # sort
 final <- dplyr::arrange(final, SubjectId, Activity)
 
 setwd("~/datascience/3.obtaining")
-write.table(final, "getdata-008.txt", row.name=FALSE)
+write.table(final, "getdata-008.txt", row.names=FALSE)
 
